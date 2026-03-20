@@ -3,369 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amph Insight Hub - ระบบปฏิทินการให้คำปรึกษา</title>
+    <title>AMPH Insight Hub - มหาวิทยาลัยมหิดล</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Prompt', sans-serif;
-            background-color: #f8fafc;
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
+        .mu-blue { background-color: #00246B; }
+        .mu-gold { color: #D4AF37; }
+        .mu-gold-bg { background-color: #D4AF37; }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .mahidol-blue {
-            background-color: #002454;
-        }
-        .mahidol-blue-text {
-            color: #002454;
-        }
-        .mahidol-gold {
-            background-color: #F1C40F;
-        }
-        .mahidol-gold-text {
-            color: #F1C40F;
-        }
-        /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.95);
+        
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body class="text-slate-800 h-screen flex flex-col">
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <!-- Navbar -->
-    <nav class="mahidol-blue text-white shadow-md sticky top-0 z-50">
+    <!-- ================== NAVBAR ================== -->
+    <nav class="mu-blue text-white shadow-lg z-40 relative flex-shrink-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center cursor-pointer" onclick="showView('dashboardView')">
-                    <i data-lucide="graduation-cap" class="h-8 w-8 text-[#F1C40F] mr-3"></i>
-                    <span class="font-semibold text-xl tracking-tight">Amph Insight Hub</span>
+            <div class="flex justify-between items-center h-[72px]">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-4 cursor-pointer" onclick="showView('dashboardView')">
+                    <div class="bg-white p-1.5 rounded-full shadow-inner">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Mahidol_U.png/200px-Mahidol_U.png" alt="MU Logo" class="h-9 w-9 object-contain" onerror="this.src='https://via.placeholder.com/36?text=MU'">
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-xl tracking-wide mu-gold flex items-center gap-2">
+                            AMPH Insight Hub
+                        </h1>
+                        <p class="text-[11px] text-blue-200 -mt-0.5 tracking-wide">คณะสาธารณสุขศาสตร์ มหาวิทยาลัยมหิดล</p>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span id="userProfileDisplay" class="hidden text-sm md:text-base font-medium bg-blue-800 px-3 py-1.5 rounded-full flex items-center">
-                        <i data-lucide="user" class="h-4 w-4 mr-2"></i>
-                        <span id="loggedInUserId"></span>
-                    </span>
-                    <button id="logoutBtn" onclick="handleLogout()" class="hidden text-sm text-red-300 hover:text-red-100 transition">ออกจากระบบ</button>
+
+                <!-- User Actions -->
+                <div class="flex items-center gap-3 md:gap-4">
+                    <!-- Login Button (Guest) -->
+                    <button id="navLoginBtn" onclick="openAuth('login')" class="text-sm font-medium bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition flex items-center border border-white/20">
+                        <i data-lucide="log-in" class="h-4 w-4 mr-2"></i> เข้าสู่ระบบ
+                    </button>
+
+                    <!-- User Profile (Logged In) -->
+                    <div id="userProfileDisplay" class="hidden items-center gap-3">
+                        <span class="text-sm font-medium bg-blue-800/80 px-4 py-1.5 rounded-full flex items-center border border-blue-700">
+                            <i data-lucide="user" class="h-4 w-4 mr-2 mu-gold"></i>
+                            <span id="loggedInUserId"></span>
+                        </span>
+                        <button id="adminBtn" onclick="showView('adminView')" class="hidden text-sm bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-full transition flex items-center shadow-sm">
+                            <i data-lucide="settings" class="h-4 w-4 mr-1"></i> หลังบ้าน
+                        </button>
+                        <button onclick="handleLogout()" class="p-2 text-red-300 hover:text-red-100 hover:bg-red-500/20 rounded-full transition tooltip" title="ออกจากระบบ">
+                            <i data-lucide="log-out" class="h-5 w-5"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow overflow-y-auto p-4 md:p-8">
-        <div class="max-w-7xl mx-auto">
-
-            <!-- ================== VIEW: DASHBOARD ================== -->
-            <div id="dashboardView" class="animate-fade-in block">
+    <!-- ================== MAIN CONTENT AREA ================== -->
+    <main class="flex-grow overflow-y-auto bg-slate-50 relative custom-scrollbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full">
+            
+            <!-- ================== VIEW: DASHBOARD (Home) ================== -->
+            <div id="dashboardView" class="animate-fade-in block space-y-8">
                 
-                <!-- Hero Section แบบ Google Site Banner -->
-                <div class="relative bg-[#002454] rounded-3xl overflow-hidden shadow-xl mb-12">
-                    <!-- Background Pattern / Gradient -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-[#002454] via-blue-900 to-[#001838] opacity-90"></div>
-                    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-white opacity-5 blur-3xl"></div>
-                    <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-[#F1C40F] opacity-10 blur-3xl"></div>
+                <!-- Hero Section -->
+                <div class="mu-blue rounded-3xl p-8 md:p-12 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+                    <!-- Decor Graphic -->
+                    <div class="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 100% 0%, #D4AF37 0%, transparent 50%);"></div>
+                    <i data-lucide="network" class="absolute -bottom-10 -right-10 w-64 h-64 text-blue-400 opacity-10 pointer-events-none"></i>
                     
-                    <div class="relative z-10 p-8 md:p-14 text-center md:text-left flex flex-col md:flex-row items-center gap-8">
-                        <div class="flex-grow">
-                            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-800/50 border border-blue-400/30 text-blue-200 text-sm font-medium mb-6">
-                                <i data-lucide="sparkles" class="h-4 w-4 text-[#F1C40F]"></i> ศูนย์รวมองค์ความรู้และนวัตกรรมทางสาธารณสุข
-                            </div>
-                            <h1 class="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                                AMPH <span class="text-[#F1C40F]">Insight Hub</span>
-                            </h1>
-                            <p class="text-blue-100 text-lg md:text-xl max-w-3xl mb-8 leading-relaxed font-light">
-                                "ศูนย์รวมองค์ความรู้และนวัตกรรมทางสาธารณสุข ที่หล่อหลอมจากงานวิจัยของนักศึกษาและคณาจารย์ เพื่อขับเคลื่อนสุขภาวะชุมชนอย่างยั่งยืน"
-                            </p>
-                            <div class="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-6 py-4 shadow-lg">
-                                <p class="text-white text-sm md:text-base">
-                                    <span class="text-[#F1C40F] font-semibold mr-2">ภายใต้อัตลักษณ์:</span> 
-                                    "ฉลาดรอบรู้ บูรณาการปัญญา พัฒนาสุขภาวะชุมชน"
-                                </p>
-                            </div>
-                        </div>
-                        <div class="hidden lg:block w-48 h-48 opacity-80">
-                            <i data-lucide="network" class="w-full h-full text-blue-300/30"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grid Menu Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-                    
-                    <!-- Card 1: คลังวิจัย -->
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group">
-                        <div class="bg-emerald-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <i data-lucide="library" class="h-7 w-7 text-emerald-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800 group-hover:text-emerald-700 transition-colors">คลังวิจัย</h3>
-                        <p class="text-slate-500 text-sm mb-5 flex-grow">แหล่งสืบค้นและเรียนรู้องค์ความรู้จากงานวิจัยนักศึกษาที่ผ่านการคัดสรร แยกตามปีการศึกษาและหมวดหมู่สุขภาพที่น่าสนใจ</p>
-                        <div class="flex flex-wrap gap-2 mt-auto">
-                            <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">AMPH e-Theses</span>
-                            <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">AMPH e-IS</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: ความสำเร็จ -->
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group">
-                        <div class="bg-amber-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <i data-lucide="award" class="h-7 w-7 text-amber-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800 group-hover:text-amber-700 transition-colors">ความสำเร็จ</h3>
-                        <p class="text-slate-500 text-sm mb-5 flex-grow">เชิดชูเกียรติผลงานคุณภาพที่ได้รับการตีพิมพ์ในระดับวารสารวิชาการ รางวัลจากเวทีนำเสนอระดับชาติ และเรื่องราวความสำเร็จ</p>
-                        <div class="flex flex-wrap gap-2 mt-auto">
-                            <span class="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded-md">Publications</span>
-                            <span class="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded-md">Awards</span>
-                            <span class="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-1 rounded-md">Proceeding</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: ระบบปฏิทินการให้คำปรึกษา (Interactive - ต้อง Login) -->
-                    <div onclick="checkLoginAndRoute()" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-10 group-hover:scale-150 transition-transform duration-500"></div>
-                        <div class="bg-blue-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:bg-[#002454] transition-colors duration-300">
-                            <i data-lucide="calendar-clock" class="h-7 w-7 mahidol-blue-text group-hover:text-white transition-colors"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800">ระบบปฏิทินการให้คำปรึกษา</h3>
-                        <p class="text-slate-500 text-sm mb-4 flex-grow">ระบบจองเวลาเพื่อนัดหมายพูดคุยและขอคำปรึกษากับอาจารย์ที่ปรึกษา (ต้องสมัครสมาชิกและเข้าสู่ระบบก่อนใช้งาน)</p>
-                        <div class="mt-auto flex items-center text-sm font-semibold mahidol-blue-text group-hover:translate-x-2 transition-transform">
-                            เข้าสู่ระบบนัดหมาย <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i>
-                        </div>
-                    </div>
-
-                    <!-- Card 4: AMPH Faculty -->
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group">
-                        <div class="bg-purple-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <i data-lucide="users" class="h-7 w-7 text-purple-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800 group-hover:text-purple-700 transition-colors">AMPH Faculty</h3>
-                        <p class="text-slate-500 text-sm mb-5 flex-grow">ทำเนียบคณาจารย์ผู้เชี่ยวชาญ พร้อมเจาะลึกทิศทางการขับเคลื่อนงานวิจัยเชิงรุกเพื่อตอบโจทย์สาธารณสุขในยุคปัจจุบัน</p>
-                        <div class="mt-auto pt-4 border-t border-slate-100">
-                            <span class="text-xs text-slate-400 flex items-center"><i data-lucide="search" class="h-3 w-3 mr-1"></i> ค้นหาความเชี่ยวชาญอาจารย์</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 5: ทำเนียบศิษย์เก่า -->
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group">
-                        <div class="bg-orange-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <i data-lucide="graduation-cap" class="h-7 w-7 text-orange-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800 group-hover:text-orange-700 transition-colors">ทำเนียบศิษย์เก่า</h3>
-                        <p class="text-slate-500 text-sm mb-5 flex-grow">เชื่อมต่อเครือข่ายบัณฑิตสาธารณสุข แลกเปลี่ยนประสบการณ์ และสร้างสายสัมพันธ์อันดีระหว่างรุ่นพี่รุ่นน้อง</p>
-                        <div class="mt-auto pt-4 border-t border-slate-100">
-                            <span class="text-xs text-slate-400 flex items-center"><i data-lucide="link" class="h-3 w-3 mr-1"></i> Alumni Network</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 6: Contact -->
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col h-full cursor-pointer group">
-                        <div class="bg-rose-50 w-14 h-14 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                            <i data-lucide="map-pinned" class="h-7 w-7 text-rose-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3 text-slate-800 group-hover:text-rose-700 transition-colors">ติดต่อเรา (Contact)</h3>
-                        <p class="text-slate-500 text-sm mb-5 flex-grow">ช่องทางการสื่อสารข้อมูลกับหลักสูตรฯ สถานที่ตั้ง และแผนที่โครงการจัดตั้งวิทยาเขตฯ</p>
-                        <div class="flex flex-col gap-2 mt-auto">
-                            <span class="text-xs text-slate-500 flex items-center"><i data-lucide="phone" class="h-3 w-3 mr-2"></i> ติดต่อสอบถาม</span>
-                            <span class="text-xs text-slate-500 flex items-center"><i data-lucide="map" class="h-3 w-3 mr-2"></i> แผนที่วิทยาเขต</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- ================== VIEW: LOGIN ================== -->
-            <div id="loginView" class="hidden min-h-[70vh] flex items-center justify-center">
-                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-md border border-slate-100">
-                    <div class="text-center mb-8">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 mb-4">
-                            <i data-lucide="log-in" class="h-8 w-8 mahidol-blue-text"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-slate-800">เข้าสู่ระบบ</h2>
-                        <p class="text-slate-500 text-sm mt-2">ระบบนัดหมายอาจารย์ที่ปรึกษา</p>
-                    </div>
-
-                    <form onsubmit="handleLogin(event)" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักศึกษา (Username)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i data-lucide="user" class="h-5 w-5 text-slate-400"></i>
-                                </div>
-                                <input type="text" id="loginUsername" required class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002454] focus:border-transparent outline-none transition-all" placeholder="ตัวอย่าง: 6412345">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน (Password)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
-                                </div>
-                                <input type="password" id="loginPassword" required class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002454] focus:border-transparent outline-none transition-all" placeholder="••••••••">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full mahidol-blue text-white font-medium py-3 px-4 rounded-xl hover:bg-blue-900 transition-colors shadow-md hover:shadow-lg flex justify-center items-center">
-                            เข้าสู่ระบบ <i data-lucide="arrow-right" class="h-4 w-4 ml-2"></i>
-                        </button>
-                    </form>
-
-                    <div class="mt-8 text-center">
-                        <p class="text-sm text-slate-500">
-                            ยังไม่มีบัญชีใช่หรือไม่? 
-                            <button onclick="showView('registerView')" class="font-semibold mahidol-blue-text hover:underline focus:outline-none">
-                                สมัครใช้งานที่นี่
-                            </button>
+                    <div class="relative z-10 max-w-3xl">
+                        <span class="mu-gold-bg text-blue-900 px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-5 inline-block shadow-sm">PUBLIC HEALTH INNOVATION</span>
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4 leading-tight">ศูนย์รวมองค์ความรู้และนวัตกรรม<br><span class="mu-gold">ทางสาธารณสุข</span></h2>
+                        <p class="text-blue-100 text-base md:text-lg mb-6 leading-relaxed">
+                            ที่หล่อหลอมจากงานวิจัยของนักศึกษาและคณาจารย์ เพื่อขับเคลื่อนสุขภาวะชุมชนอย่างยั่งยืน ภายใต้อัตลักษณ์ 
+                            <span class="font-semibold text-white">"ฉลาดรอบรู้ บูรณาการปัญญา พัฒนาสุขภาวะชุมชน"</span>
                         </p>
-                        <button onclick="showView('dashboardView')" class="mt-4 text-sm text-slate-400 hover:text-slate-600 transition flex items-center justify-center w-full">
-                            <i data-lucide="arrow-left" class="h-4 w-4 mr-1"></i> กลับสู่หน้าหลัก
-                        </button>
+                    </div>
+                    
+                    <div class="relative z-10 flex-shrink-0 hidden lg:block">
+                        <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/20">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Mahidol_U.png/200px-Mahidol_U.png" alt="MU" class="h-32 w-32 object-contain opacity-80 mix-blend-screen drop-shadow-lg" onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Menu Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- 1. คลังวิจัย -->
+                    <div onclick="showView('researchView')" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col cursor-pointer group hover:-translate-y-1">
+                        <div class="bg-emerald-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-emerald-100 transition-colors">
+                            <i data-lucide="library-big" class="h-7 w-7 text-emerald-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-emerald-700">คลังวิจัย</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">แหล่งสืบค้นและเรียนรู้องค์ความรู้จากงานวิจัยนักศึกษาที่ผ่านการคัดสรร แยกตามปีการศึกษาและหมวดหมู่สุขภาพที่น่าสนใจ</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="text-[11px] font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-100">AMPH e-Theses</span>
+                            <span class="text-[11px] font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-100">AMPH e-IS</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. ความสำเร็จ -->
+                    <div onclick="showView('achievementsView')" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col cursor-pointer group hover:-translate-y-1">
+                        <div class="bg-orange-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-orange-100 transition-colors">
+                            <i data-lucide="award" class="h-7 w-7 text-orange-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-orange-600">ความสำเร็จ</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">เชิดชูเกียรติผลงานคุณภาพที่ได้รับการตีพิมพ์ในระดับวารสารวิชาการ รางวัลจากเวทีระดับชาติ และเรื่องราวความสำเร็จ</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="text-[11px] font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Publications</span>
+                            <span class="text-[11px] font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Awards</span>
+                            <span class="text-[11px] font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Proceeding</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. AMPH Faculty -->
+                    <div onclick="showView('facultyView')" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col cursor-pointer group hover:-translate-y-1">
+                        <div class="bg-indigo-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-indigo-100 transition-colors">
+                            <i data-lucide="users" class="h-7 w-7 text-indigo-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-indigo-700">AMPH Faculty</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">ทำเนียบคณาจารย์ผู้เชี่ยวชาญ พร้อมเจาะลึกทิศทางการขับเคลื่อนงานวิจัยเชิงรุกเพื่อตอบโจทย์สาธารณสุขในยุคปัจจุบัน</p>
+                        <div class="mt-auto flex items-center text-sm font-medium text-indigo-600 group-hover:translate-x-1 transition-transform">
+                            ดูข้อมูลคณาจารย์ <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i>
+                        </div>
+                    </div>
+
+                    <!-- 4. ปฏิทินนัดหมาย (Requires Login) -->
+                    <div onclick="requireLoginForBooking()" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-blue-500 p-6 flex flex-col cursor-pointer group hover:-translate-y-1 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">ระบบนักศึกษา</div>
+                        <div class="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-blue-100 transition-colors">
+                            <i data-lucide="calendar-clock" class="h-7 w-7 text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-blue-700">ระบบปฏิทินการให้คำปรึกษา</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">นัดหมายอาจารย์ที่ปรึกษาเพื่อขอรับคำปรึกษาด้านวิชาการ โครงงาน หรือวิทยานิพนธ์ (ต้องเข้าสู่ระบบก่อนใช้งาน)</p>
+                        <div class="mt-auto flex items-center justify-between">
+                            <span class="text-sm font-medium text-blue-600 flex items-center group-hover:translate-x-1 transition-transform">เข้าสู่ระบบนัดหมาย <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i></span>
+                            <i data-lucide="lock" class="h-4 w-4 text-slate-300 group-hover:text-blue-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- 5. ทำเนียบศิษย์เก่า -->
+                    <div onclick="showView('alumniView')" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col cursor-pointer group hover:-translate-y-1">
+                        <div class="bg-pink-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-pink-100 transition-colors">
+                            <i data-lucide="graduation-cap" class="h-7 w-7 text-pink-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-pink-700">ทำเนียบศิษย์เก่า</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">เชื่อมต่อเครือข่ายบัณฑิตสาธารณสุข แลกเปลี่ยนประสบการณ์การทำงาน และสร้างสายสัมพันธ์อันดีระหว่างรุ่นพี่รุ่นน้อง</p>
+                        <div class="mt-auto flex items-center text-sm font-medium text-pink-600 group-hover:translate-x-1 transition-transform">
+                            ดูเครือข่ายศิษย์เก่า <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i>
+                        </div>
+                    </div>
+
+                    <!-- 6. Contact -->
+                    <div onclick="showView('contactView')" class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 p-6 flex flex-col cursor-pointer group hover:-translate-y-1">
+                        <div class="bg-slate-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-slate-200 transition-colors">
+                            <i data-lucide="map-pin" class="h-7 w-7 text-slate-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 group-hover:text-slate-900">Contact</h3>
+                        <p class="text-slate-500 text-sm mb-5 flex-grow leading-relaxed">ช่องทางการสื่อสารข้อมูลกับหลักสูตรฯ สถานที่ตั้ง เบอร์ติดต่อ และแผนที่โครงการจัดตั้งวิทยาเขตฯ</p>
+                        <div class="mt-auto flex items-center text-sm font-medium text-slate-600 group-hover:translate-x-1 transition-transform">
+                            ติดต่อเรา <i data-lucide="arrow-right" class="h-4 w-4 ml-1"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================== VIEW: AUTHENTICATION (Login / Register) ================== -->
+            <div id="authView" class="hidden animate-fade-in max-w-md mx-auto mt-10">
+                <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+                    <!-- Tabs -->
+                    <div class="flex text-center border-b border-slate-100 font-medium">
+                        <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-4 text-blue-600 border-b-2 border-blue-600 bg-blue-50/50">เข้าสู่ระบบ</button>
+                        <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-4 text-slate-500 hover:bg-slate-50 border-b-2 border-transparent">สมัครสมาชิก (นักศึกษา)</button>
+                    </div>
+
+                    <div class="p-8">
+                        <!-- Login Form -->
+                        <div id="formLogin" class="block">
+                            <div class="text-center mb-6">
+                                <h2 class="text-2xl font-bold text-slate-800">ยินดีต้อนรับกลับมา</h2>
+                                <p class="text-slate-500 text-sm mt-1">เข้าสู่ระบบเพื่อนัดหมายอาจารย์ที่ปรึกษา</p>
+                            </div>
+                            <form onsubmit="handleLogin(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักศึกษา (Username)</label>
+                                    <div class="relative">
+                                        <i data-lucide="user" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                                        <input type="text" id="loginId" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น 6410001 (เทสด้วย admin)">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน</label>
+                                    <div class="relative">
+                                        <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                                        <input type="password" id="loginPwd" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="•••••••• (เทสด้วย admin)">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full mu-blue text-white font-medium py-3 rounded-xl hover:bg-blue-900 transition-colors shadow-md mt-6">
+                                    เข้าสู่ระบบ
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div id="formRegister" class="hidden">
+                            <div class="text-center mb-6">
+                                <h2 class="text-2xl font-bold text-slate-800">สร้างบัญชีนักศึกษา</h2>
+                                <p class="text-slate-500 text-sm mt-1">ใช้ <span class="text-blue-600 font-semibold">Mahidol Mail</span> ในการยืนยันตัวตน</p>
+                            </div>
+                            <form onsubmit="handleRegister(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">อีเมลมหาวิทยาลัย (@mahidol.edu / .ac.th)</label>
+                                    <div class="relative">
+                                        <i data-lucide="mail" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                                        <input type="email" id="regEmail" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="name.sur@student.mahidol.edu">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักศึกษา (จะใช้เป็น Username)</label>
+                                    <div class="relative">
+                                        <i data-lucide="hash" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                                        <input type="text" id="regId" required pattern="[0-9]{7}" title="รหัสนักศึกษา 7 หลัก" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น 6410001">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ตั้งรหัสผ่านใหม่</label>
+                                    <div class="relative">
+                                        <i data-lucide="key" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                                        <input type="password" id="regPwd" required minlength="6" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="กำหนดรหัสผ่าน 6 ตัวขึ้นไป">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-emerald-600 text-white font-medium py-3 rounded-xl hover:bg-emerald-700 transition-colors shadow-md mt-6">
+                                    สมัครสมาชิก และเข้าสู่ระบบ
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ================== VIEW: REGISTER ================== -->
-            <div id="registerView" class="hidden min-h-[70vh] flex items-center justify-center py-8">
-                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl w-full max-w-lg border border-slate-100">
-                    <div class="text-center mb-8">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-50 mb-4">
-                            <i data-lucide="user-plus" class="h-8 w-8 mahidol-gold-text"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-slate-800">สมัครเข้าใช้งานระบบ</h2>
-                        <p class="text-slate-500 text-sm mt-2">กรุณาใช้ Mahidol Mail ของท่านในการสมัคร</p>
-                    </div>
-
-                    <form onsubmit="handleRegister(event)" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">อีเมลมหาวิทยาลัย (Mahidol Mail)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i data-lucide="mail" class="h-5 w-5 text-slate-400"></i>
-                                </div>
-                                <input type="email" id="regEmail" required class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#F1C40F] focus:border-transparent outline-none transition-all" placeholder="name.sur@student.mahidol.edu">
-                            </div>
-                            <p class="text-xs text-slate-400 mt-1">ต้องลงท้ายด้วย @student.mahidol.edu หรือ @mahidol.ac.th</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักศึกษา (จะใช้เป็น Username)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i data-lucide="id-card" class="h-5 w-5 text-slate-400"></i>
-                                </div>
-                                <input type="text" id="regStudentId" required pattern="[0-9]{7,10}" title="กรุณากรอกรหัสนักศึกษาให้ถูกต้อง (ตัวเลขเท่านั้น)" class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#F1C40F] focus:border-transparent outline-none transition-all" placeholder="641xxxx">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">ตั้งรหัสผ่าน</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i data-lucide="lock" class="h-5 w-5 text-slate-400"></i>
-                                    </div>
-                                    <input type="password" id="regPassword" required minlength="6" class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#F1C40F] focus:border-transparent outline-none transition-all" placeholder="••••••••">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">ยืนยันรหัสผ่าน</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i data-lucide="lock-keyhole" class="h-5 w-5 text-slate-400"></i>
-                                    </div>
-                                    <input type="password" id="regConfirmPassword" required minlength="6" class="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#F1C40F] focus:border-transparent outline-none transition-all" placeholder="••••••••">
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full mahidol-gold mahidol-blue-text font-bold py-3 px-4 rounded-xl hover:bg-yellow-500 transition-colors shadow-md hover:shadow-lg mt-4">
-                            ลงทะเบียน
+            <!-- ================== VIEW: BOOKING (ระบบนัดหมายอาจารย์) ================== -->
+            <div id="bookingView" class="hidden animate-fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <button onclick="showView('dashboardView')" class="mr-4 p-2 bg-white rounded-full shadow-sm hover:bg-slate-100 transition">
+                            <i data-lucide="arrow-left" class="h-5 w-5 text-slate-600"></i>
                         </button>
-                    </form>
-
-                    <div class="mt-6 text-center">
-                        <button onclick="showView('loginView')" class="text-sm text-slate-500 hover:text-slate-800 transition flex items-center justify-center w-full">
-                            <i data-lucide="arrow-left" class="h-4 w-4 mr-1"></i> กลับไปหน้าเข้าสู่ระบบ
-                        </button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800 flex items-center"><i data-lucide="calendar-clock" class="mr-2 text-blue-600 h-6 w-6"></i> ระบบปฏิทินการให้คำปรึกษา</h2>
+                            <p class="text-slate-500 text-sm">ผู้ใช้งาน: <span id="bookingUserName" class="font-medium text-blue-600"></span></p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ================== VIEW: BOOKING CALENDAR ================== -->
-            <div id="bookingView" class="hidden">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold mahidol-blue-text">ระบบปฏิทินการให้คำปรึกษา</h2>
-                        <p class="text-slate-500">เลือกอาจารย์ที่ปรึกษาและเวลาที่ท่านต้องการเข้าพบ</p>
-                    </div>
-                    <button onclick="showView('dashboardView')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition flex items-center">
-                        <i data-lucide="layout-dashboard" class="h-4 w-4 mr-2"></i> กลับหน้าหลัก
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
-                    <!-- ฟอร์มจำลองการจอง -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- รายชื่ออาจารย์ -->
+                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800 flex items-center"><i data-lucide="users" class="h-5 w-5 mr-2 text-blue-600"></i> เลือกอาจารย์ที่ปรึกษา</h3>
                         
-                        <!-- ฝั่งเลือกข้อมูล -->
-                        <div class="lg:col-span-1 space-y-6">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">1. เลือกอาจารย์ที่ปรึกษา</label>
-                                <select class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002454] outline-none">
-                                    <option value="">-- กรุณาเลือก --</option>
-                                    <option>ผศ.ดร. สมชาย ใจดี (ภาควิชา X)</option>
-                                    <option>อ.ดร. มานี มีสุข (ภาควิชา Y)</option>
-                                    <option>รศ.ดร. ปิติ รักเรียน (ภาควิชา Z)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">2. หัวข้อที่ต้องการปรึกษา</label>
-                                <select class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002454] outline-none">
-                                    <option value="">-- กรุณาเลือก --</option>
-                                    <option>การลงทะเบียนเรียน / แผนการเรียน</option>
-                                    <option>โครงงาน / วิทยานิพนธ์</option>
-                                    <option>การฝึกงาน / สหกิจศึกษา</option>
-                                    <option>ปัญหาการเรียน / การปรับตัว</option>
-                                    <option>อื่นๆ</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-2">รายละเอียดเพิ่มเติม (ถ้ามี)</label>
-                                <textarea rows="3" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#002454] outline-none resize-none" placeholder="ระบุสิ่งที่ต้องการสอบถามล่วงหน้า..."></textarea>
-                            </div>
+                        <div class="relative mb-4">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400"></i>
+                            <input type="text" placeholder="ค้นหาชื่ออาจารย์..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
 
-                        <!-- ฝั่งปฏิทิน (จำลอง UI) -->
-                        <div class="lg:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">3. เลือกวันและเวลาทำการ</label>
-                            <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 text-center h-[300px] flex flex-col items-center justify-center">
-                                <i data-lucide="calendar-search" class="h-12 w-12 text-slate-300 mb-3"></i>
-                                <p class="text-slate-500 font-medium">กรุณาเลือกอาจารย์ที่ปรึกษาก่อน<br>เพื่อดูตารางเวลาที่ว่าง</p>
-                                
-                                <!-- ตัวอย่างหลังจากเลือก (ในของจริงใช้ JS เปลี่ยนสถานะ) -->
-                                <div class="hidden w-full mt-4">
-                                    <!-- ตัวอย่าง UI วันที่ -->
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="flex items-center p-3 rounded-xl border-2 border-blue-500 bg-blue-50 cursor-pointer transition">
+                                <div class="h-10 w-10 rounded-full mu-blue text-white flex items-center justify-center font-bold mr-3 flex-shrink-0">อ.</div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">รศ.ดร. อรุณี สุขภาวะ</h4>
+                                    <p class="text-xs text-slate-500">ความเชี่ยวชาญ: ระบาดวิทยา</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-slate-50 cursor-pointer transition">
+                                <div class="h-10 w-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold mr-3 flex-shrink-0">พ.</div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">ผศ. นพ. พงศกร รักดี</h4>
+                                    <p class="text-xs text-slate-500">ความเชี่ยวชาญ: อาชีวอนามัย</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ปฏิทินและรายละเอียด -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="font-bold text-lg text-slate-800 flex items-center"><i data-lucide="calendar" class="h-5 w-5 mr-2 text-blue-600"></i> เลือกวันและเวลา</h3>
+                                <div class="flex gap-2">
+                                    <button class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"><i data-lucide="chevron-left" class="h-4 w-4"></i></button>
+                                    <span class="text-sm font-semibold flex items-center px-2">พฤศจิกายน 2568</span>
+                                    <button class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"><i data-lucide="chevron-right" class="h-4 w-4"></i></button>
                                 </div>
                             </div>
 
-                            <div class="mt-6 flex justify-end">
-                                <button onclick="handleMockBooking()" class="mahidol-blue text-white font-medium py-3 px-8 rounded-xl hover:bg-blue-900 transition-colors shadow-md flex items-center opacity-50 cursor-not-allowed" id="mockSubmitBtn">
-                                    <i data-lucide="calendar-check" class="h-5 w-5 mr-2"></i> ยืนยันการนัดหมาย
+                            <div class="grid grid-cols-7 gap-2 text-center mb-6">
+                                <div class="text-xs font-semibold text-slate-400 py-1">อา</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">จ</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">อ</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">พ</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">พฤ</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">ศ</div>
+                                <div class="text-xs font-semibold text-slate-400 py-1">ส</div>
+                                
+                                <!-- Mock Dates -->
+                                <div></div><div></div>
+                                <div class="py-2 text-sm text-slate-300">1</div><div class="py-2 text-sm text-slate-300">2</div>
+                                <div class="py-2 text-sm text-slate-700 cursor-pointer hover:bg-blue-50 rounded-lg">3</div>
+                                <div class="py-2 text-sm text-slate-700 cursor-pointer hover:bg-blue-50 rounded-lg relative">4<span class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full"></span></div>
+                                <div class="py-2 text-sm text-white bg-blue-600 rounded-lg font-bold shadow-md">5</div>
+                                <div class="py-2 text-sm text-slate-700 cursor-pointer hover:bg-blue-50 rounded-lg relative">6<span class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full"></span></div>
+                            </div>
+
+                            <div class="border-t border-slate-100 pt-5">
+                                <h4 class="text-sm font-semibold text-slate-700 mb-3">ช่วงเวลาที่ว่าง วันที่ 5 พ.ย. 2568</h4>
+                                <div class="flex flex-wrap gap-3">
+                                    <button class="px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-500 bg-slate-50 opacity-50 cursor-not-allowed">09:00 - 10:00 (เต็ม)</button>
+                                    <button class="px-4 py-2 border-2 border-blue-600 bg-blue-50 rounded-xl text-sm text-blue-700 font-semibold transition">10:00 - 11:00</button>
+                                    <button class="px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600 transition bg-white">13:00 - 14:00</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ฟอร์มยืนยัน -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <h3 class="font-bold text-lg mb-4 text-slate-800 flex items-center"><i data-lucide="edit-3" class="h-5 w-5 mr-2 text-blue-600"></i> รายละเอียดการขอคำปรึกษา</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <input type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="หัวข้อเรื่อง (เช่น ปรึกษาหัวข้อ IS / การวิเคราะห์ข้อมูล)">
+                                </div>
+                                <textarea class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none" rows="2" placeholder="รายละเอียดเพิ่มเติมที่ต้องการแจ้งอาจารย์ล่วงหน้า..."></textarea>
+                                <button onclick="handleMockBooking()" class="w-full sm:w-auto mu-blue text-white font-medium py-3 px-8 rounded-xl hover:bg-blue-900 transition-colors shadow-md flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="h-5 w-5 mr-2"></i> ยืนยันการนัดหมาย
                                 </button>
                             </div>
                         </div>
@@ -373,160 +365,323 @@
                 </div>
             </div>
 
+            <!-- ================== VIEW: ADMIN PANEL (อัปโหลดงานวิจัย) ================== -->
+            <div id="adminView" class="hidden animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b pb-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-purple-800 flex items-center"><i data-lucide="database" class="h-8 w-8 mr-3"></i> ระบบจัดการข้อมูล (Admin)</h2>
+                        <p class="text-slate-500 mt-1">อัปโหลดและจัดการไฟล์งานวิจัยเข้าสู่คลัง AMPH</p>
+                    </div>
+                    <button onclick="showView('dashboardView')" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center shadow-sm">
+                        <i data-lucide="x" class="h-4 w-4 mr-2"></i> ปิดโหมดแอดมิน
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- ฟอร์มอัปโหลด -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sticky top-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                <i data-lucide="upload-cloud" class="h-5 w-5 mr-2 text-purple-600"></i> เพิ่มงานวิจัยใหม่
+                            </h3>
+                            <form onsubmit="handleUploadResearch(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">หมวดหมู่ผลงาน</label>
+                                    <select id="uploadType" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none text-sm">
+                                        <option value="">-- เลือกหมวดหมู่ --</option>
+                                        <option value="AMPH e-Theses">AMPH e-Theses</option>
+                                        <option value="AMPH e-IS">AMPH e-IS</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา (พ.ศ.)</label>
+                                    <input type="number" id="uploadYear" required value="2567" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่องานวิจัย</label>
+                                    <textarea id="uploadTitle" required rows="3" placeholder="ระบุชื่องานวิจัยภาษาไทยหรืออังกฤษ..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">อัปโหลดไฟล์ (PDF)</label>
+                                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
+                                        <input type="file" id="uploadFile" accept=".pdf" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                        <i data-lucide="file-pdf" class="h-8 w-8 text-slate-400 mx-auto mb-2"></i>
+                                        <p class="text-sm text-slate-500">คลิกหรือลากไฟล์ PDF มาวางที่นี่</p>
+                                        <p id="fileNameDisplay" class="text-xs text-purple-600 font-medium mt-2 hidden"></p>
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-purple-600 text-white font-medium py-3 rounded-xl hover:bg-purple-700 transition shadow-md flex justify-center items-center mt-6">
+                                    <i data-lucide="save" class="h-5 w-5 mr-2"></i> บันทึกเข้าระบบ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- รายการที่อัปโหลด -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center justify-between">
+                                <span class="flex items-center"><i data-lucide="list" class="h-5 w-5 mr-2 text-slate-600"></i> รายการในระบบปัจจุบัน</span>
+                                <span class="text-xs font-normal text-purple-700 bg-purple-100 px-3 py-1 rounded-full" id="adminResearchCount">0 รายการ</span>
+                            </h3>
+                            <div class="flex-grow overflow-y-auto pr-2 custom-scrollbar max-h-[600px]">
+                                <div id="adminResearchListContainer" class="space-y-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================== VIEW: RESEARCH REPOSITORY ================== -->
+            <div id="researchView" class="hidden animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b pb-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-emerald-800 flex items-center"><i data-lucide="library-big" class="h-8 w-8 mr-3 text-emerald-600"></i> คลังวิจัย (Research Repository)</h2>
+                        <p class="text-slate-500 mt-1">แหล่งสืบค้นองค์ความรู้ AMPH e-Theses และ AMPH e-Independent Studies (IS)</p>
+                    </div>
+                    <button onclick="showView('dashboardView')" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center shadow-sm whitespace-nowrap">
+                        <i data-lucide="arrow-left" class="h-4 w-4 mr-2"></i> กลับหน้าหลัก
+                    </button>
+                </div>
+
+                <!-- Search & Filter -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4">
+                    <div class="relative flex-grow">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400"></i>
+                        <input type="text" id="searchInput" onkeyup="filterResearch()" placeholder="ค้นหาชื่องานวิจัย..." class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    </div>
+                    <select id="filterType" onchange="filterResearch()" class="w-full md:w-48 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm focus:ring-2 focus:ring-emerald-500">
+                        <option value="all">ทุกหมวดหมู่</option>
+                        <option value="AMPH e-Theses">AMPH e-Theses</option>
+                        <option value="AMPH e-IS">AMPH e-IS</option>
+                    </select>
+                </div>
+
+                <!-- List Container -->
+                <div id="publicResearchListContainer" class="grid grid-cols-1 gap-4"></div>
+            </div>
+
+            <!-- ================== MOCK VIEWS (Achievements, Faculty, Alumni, Contact) ================== -->
+            <div id="achievementsView" class="hidden animate-fade-in text-center py-20">
+                <i data-lucide="award" class="h-16 w-16 mx-auto text-orange-400 mb-4 opacity-50"></i>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ความสำเร็จ (Achievements)</h2>
+                <p class="text-slate-500 max-w-lg mx-auto">รวบรวมผลงานตีพิมพ์ (Research Publications), รางวัลจากเวทีระดับชาติ และ Proceeding<br><span class="text-xs bg-slate-200 px-2 py-1 rounded mt-4 inline-block">อยู่ระหว่างการจัดทำข้อมูล</span></p>
+                <button onclick="showView('dashboardView')" class="mt-6 text-blue-600 hover:underline">กลับหน้าหลัก</button>
+            </div>
+
+            <div id="facultyView" class="hidden animate-fade-in text-center py-20">
+                <i data-lucide="users" class="h-16 w-16 mx-auto text-indigo-400 mb-4 opacity-50"></i>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">AMPH Faculty</h2>
+                <p class="text-slate-500 max-w-lg mx-auto">ทำเนียบคณาจารย์ผู้เชี่ยวชาญ และทิศทางการวิจัย<br><span class="text-xs bg-slate-200 px-2 py-1 rounded mt-4 inline-block">อยู่ระหว่างการจัดทำข้อมูล</span></p>
+                <button onclick="showView('dashboardView')" class="mt-6 text-blue-600 hover:underline">กลับหน้าหลัก</button>
+            </div>
+
+            <div id="alumniView" class="hidden animate-fade-in text-center py-20">
+                <i data-lucide="graduation-cap" class="h-16 w-16 mx-auto text-pink-400 mb-4 opacity-50"></i>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">ทำเนียบศิษย์เก่า</h2>
+                <p class="text-slate-500 max-w-lg mx-auto">เครือข่ายบัณฑิตสาธารณสุข<br><span class="text-xs bg-slate-200 px-2 py-1 rounded mt-4 inline-block">อยู่ระหว่างการจัดทำข้อมูล</span></p>
+                <button onclick="showView('dashboardView')" class="mt-6 text-blue-600 hover:underline">กลับหน้าหลัก</button>
+            </div>
+
+            <div id="contactView" class="hidden animate-fade-in">
+                 <div class="flex items-center justify-between mb-8 border-b pb-4">
+                    <h2 class="text-3xl font-bold text-slate-800 flex items-center"><i data-lucide="map-pin" class="mr-3 text-slate-600 h-8 w-8"></i> Contact Us</h2>
+                    <button onclick="showView('dashboardView')" class="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium transition">กลับหน้าหลัก</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-xl mb-6">ช่องทางการติดต่อ</h3>
+                        <div class="space-y-4 text-slate-600">
+                            <p class="flex items-start"><i data-lucide="map" class="h-5 w-5 mr-3 text-blue-600 mt-1"></i> <span><strong>โครงการจัดตั้งวิทยาเขตอำนาจเจริญ</strong><br>มหาวิทยาลัยมหิดล 259 หมู่ 13 ต.โนนหนามแท่ง อ.เมือง จ.อำนาจเจริญ 37000</span></p>
+                            <p class="flex items-center"><i data-lucide="phone" class="h-5 w-5 mr-3 text-blue-600"></i> 045-523-211</p>
+                            <p class="flex items-center"><i data-lucide="mail" class="h-5 w-5 mr-3 text-blue-600"></i> am.mahidol@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-200 rounded-2xl overflow-hidden h-64 md:h-auto border border-slate-200">
+                        <!-- แผนที่จำลองใช้ Iframe Google Maps -->
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3839.851752496739!2d104.62939107576566!3d15.86438064768393!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x311666826bc4e7db%3A0xe54921f00845a7d6!2z4LmC4LiE4Lij4LiH4LiB4Liy4Lij4LiI4Lix4LiU4LiV4Lix4LmJ4LiH4Lin4Li04LiX4Lii4Liy4LmA4LiC4LiV4Lit4Liz4LiZ4Liy4LiI4LmA4LiI4Lij4Li04LiN!5e0!3m2!1sth!2sth!4v1709280000000!5m2!1sth!2sth" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-[#001838] text-white py-10 mt-auto border-t-4 border-[#F1C40F]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-sm text-slate-300">
-                <div>
-                    <div class="flex items-center mb-4">
-                        <i data-lucide="graduation-cap" class="h-6 w-6 text-[#F1C40F] mr-2"></i>
-                        <span class="font-semibold text-lg text-white">AMPH Insight Hub</span>
-                    </div>
-                    <p class="mb-4">"ฉลาดรอบรู้ บูรณาการปัญญา พัฒนาสุขภาวะชุมชน"</p>
+    <!-- ================== PDF VIEWER MODAL ================== -->
+    <div id="pdfViewerModal" class="fixed inset-0 z-50 hidden bg-slate-900/95 backdrop-blur-sm flex justify-center items-center p-2 sm:p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-100 w-full max-w-6xl h-full sm:h-[95vh] rounded-xl flex flex-col overflow-hidden shadow-2xl transform scale-95 transition-transform duration-300" id="pdfViewerContent">
+            
+            <div class="bg-slate-800 text-white px-4 py-3 flex justify-between items-center z-10">
+                <div class="flex items-center gap-3 overflow-hidden w-full">
+                    <i data-lucide="file-text" class="h-5 w-5 text-emerald-400"></i>
+                    <h3 id="pdfViewerTitle" class="font-medium truncate text-sm">กำลังโหลด...</h3>
                 </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4 border-b border-slate-700 pb-2">ติดต่อหลักสูตรฯ</h4>
-                    <ul class="space-y-2">
-                        <li class="flex items-start"><i data-lucide="map-pin" class="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-[#F1C40F]"></i> โครงการจัดตั้งวิทยาเขตอำนาจเจริญ มหาวิทยาลัยมหิดล</li>
-                        <li class="flex items-center"><i data-lucide="phone" class="h-4 w-4 mr-2 text-[#F1C40F]"></i> 045-xxxxxx</li>
-                        <li class="flex items-center"><i data-lucide="mail" class="h-4 w-4 mr-2 text-[#F1C40F]"></i> amph@mahidol.ac.th</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-white font-semibold mb-4 border-b border-slate-700 pb-2">เมนูลัด</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-[#F1C40F] transition-colors">คลังวิจัย (AMPH e-Theses)</a></li>
-                        <li><a href="#" class="hover:text-[#F1C40F] transition-colors">ทำเนียบคณาจารย์</a></li>
-                        <li><a href="#" class="hover:text-[#F1C40F] transition-colors">เครือข่ายศิษย์เก่า</a></li>
-                    </ul>
-                </div>
+                <button onclick="closePdfViewer()" class="p-2 hover:bg-red-500 rounded-lg transition-colors ml-4 text-slate-300 hover:text-white">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
             </div>
-            <div class="border-t border-slate-700 pt-6 text-center text-xs text-slate-400">
-                &copy; 2026 AMPH Insight Hub. Mahidol University. All rights reserved.
+            
+            <div class="flex-grow w-full bg-slate-700 relative flex justify-center items-center">
+                <div id="pdfLoading" class="absolute flex flex-col items-center justify-center text-slate-300">
+                    <i data-lucide="loader-2" class="h-10 w-10 animate-spin mb-3 text-emerald-500"></i>
+                    <p class="text-sm">กำลังเปิดเอกสาร PDF...</p>
+                </div>
+                <!-- Iframe สำหรับแสดง PDF จริง หรือ Blob URL จากการอัปโหลด -->
+                <iframe id="pdfIframe" class="w-full h-full border-0 relative z-10" src="" onload="document.getElementById('pdfLoading').style.display='none'"></iframe>
             </div>
         </div>
-    </footer>
-
-    <!-- Custom Message Box (Toast) -->
-    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-[100] flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-lg shadow-2xl">
-        <div id="toastIcon"></div>
-        <span id="toastMessage" class="font-medium text-sm"></span>
     </div>
 
-    <!-- Application Logic -->
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center bg-white border-l-4 rounded shadow-lg px-4 py-3 min-w-[300px]">
+        <div id="toastIcon" class="mr-3"></div>
+        <div>
+            <p id="toastTitle" class="font-bold text-sm text-slate-800"></p>
+            <p id="toastMessage" class="text-xs text-slate-500"></p>
+        </div>
+    </div>
+
+    <!-- ================== JAVASCRIPT LOGIC ================== -->
     <script>
-        // Initialize Icons
         lucide.createIcons();
 
-        // State Management
+        // Database จำลอง
         let currentUser = null;
         
-        // จำลองฐานข้อมูลผู้ใช้ชั่วคราว (เพื่อให้ลองเล่น Flow ได้)
-        const mockDatabase = [
-            { id: "6410001", password: "password123", email: "demo@student.mahidol.edu" }
+        let usersDB = [
+            { id: "admin", password: "admin", role: "admin", email: "admin@mahidol.edu" }
         ];
 
-        // View Controller
+        // ฐานข้อมูลวิจัย (เริ่มด้วยของจริง 2 เรื่อง)
+        let researchesDB = [
+            { 
+                id: 1, type: "AMPH e-Theses", year: "2567", 
+                title: "รายงานสถานการณ์ผู้สูงอายุไทย (มูลนิธิสถาบันวิจัยและพัฒนาผู้สูงอายุไทย)", 
+                pdfUrl: "https://cdn.who.int/media/docs/default-source/thailand/who-thailand-ccst-th.pdf" 
+            },
+            { 
+                id: 2, type: "AMPH e-IS", year: "2566", 
+                title: "การประเมินผลกระทบทางสังคมและเศรษฐกิจจากโควิด-19 ในประเทศไทย (UN Thailand)", 
+                pdfUrl: "https://thailand.un.org/sites/default/files/2020-08/UN%20Thai%20Socio%20Impact%20Assessment_TH.pdf"
+            }
+        ];
+
+        let pendingRedirect = null; // เก็บ path ไว้หากต้อง redirect หลัง login
+
+        // --- Navigation System ---
         function showView(viewId) {
-            const views = ['dashboardView', 'loginView', 'registerView', 'bookingView'];
+            const views = ['dashboardView', 'authView', 'bookingView', 'adminView', 'researchView', 'achievementsView', 'facultyView', 'alumniView', 'contactView'];
             
             // ซ่อนทุกหน้า
             views.forEach(v => {
-                document.getElementById(v).classList.add('hidden');
-                document.getElementById(v).classList.remove('block');
+                const el = document.getElementById(v);
+                if(el) { el.classList.add('hidden'); el.classList.remove('block'); }
             });
 
             // แสดงหน้าที่เลือก
-            const target = document.getElementById(viewId);
-            target.classList.remove('hidden');
-            target.classList.add('block');
-            
-            // เลื่อนไปบนสุด
-            window.scrollTo(0, 0);
+            const targetEl = document.getElementById(viewId);
+            if(targetEl) {
+                targetEl.classList.remove('hidden');
+                targetEl.classList.add('block');
+            }
+
+            // อัปเดตข้อมูลเพิ่มเติมตามหน้า
+            if (viewId === 'researchView' || viewId === 'adminView') {
+                renderResearchLists();
+            }
+            if (viewId === 'bookingView' && currentUser) {
+                document.getElementById('bookingUserName').textContent = currentUser.id;
+            }
         }
 
-        // เช็คการเข้าสู่ระบบก่อนเข้าหน้าปฏิทิน
-        function checkLoginAndRoute() {
+        // --- Authentication System ---
+        function requireLoginForBooking() {
             if (currentUser) {
                 showView('bookingView');
             } else {
-                showToast('กรุณาเข้าสู่ระบบก่อนใช้งานระบบนัดหมาย', 'warning');
-                showView('loginView');
+                showToast('กรุณาเข้าสู่ระบบนักศึกษาก่อนใช้งานระบบนัดหมาย', 'warning');
+                pendingRedirect = 'bookingView';
+                openAuth('login');
             }
         }
 
-        // จัดการ Login
-        function handleLogin(e) {
-            e.preventDefault();
-            const idInput = document.getElementById('loginUsername').value.trim();
-            const passInput = document.getElementById('loginPassword').value;
+        function openAuth(tab) {
+            showView('authView');
+            switchAuthTab(tab);
+        }
 
-            // ค้นหาใน mock db
-            const user = mockDatabase.find(u => u.id === idInput && u.password === passInput);
+        function switchAuthTab(tab) {
+            const btnLogin = document.getElementById('tabLogin');
+            const btnReg = document.getElementById('tabRegister');
+            const formLogin = document.getElementById('formLogin');
+            const formReg = document.getElementById('formRegister');
 
-            if (user) {
-                // Login Success
-                currentUser = user;
-                updateNavbar();
-                showToast('เข้าสู่ระบบสำเร็จ', 'success');
-                showView('bookingView');
-                
-                // เคลียร์ฟอร์ม
-                document.getElementById('loginUsername').value = '';
-                document.getElementById('loginPassword').value = '';
+            if (tab === 'login') {
+                btnLogin.className = "flex-1 py-4 text-blue-600 border-b-2 border-blue-600 bg-blue-50/50";
+                btnReg.className = "flex-1 py-4 text-slate-500 hover:bg-slate-50 border-b-2 border-transparent";
+                formLogin.classList.remove('hidden'); formLogin.classList.add('block');
+                formReg.classList.remove('block'); formReg.classList.add('hidden');
             } else {
-                // Login Failed
-                showToast('รหัสนักศึกษา หรือ รหัสผ่านไม่ถูกต้อง', 'error');
+                btnReg.className = "flex-1 py-4 text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/50";
+                btnLogin.className = "flex-1 py-4 text-slate-500 hover:bg-slate-50 border-b-2 border-transparent";
+                formReg.classList.remove('hidden'); formReg.classList.add('block');
+                formLogin.classList.remove('block'); formLogin.classList.add('hidden');
             }
         }
 
-        // จัดการ Register
         function handleRegister(e) {
             e.preventDefault();
-            const email = document.getElementById('regEmail').value.trim();
-            const studentId = document.getElementById('regStudentId').value.trim();
-            const pwd = document.getElementById('regPassword').value;
-            const pwdConfirm = document.getElementById('regConfirmPassword').value;
+            const email = document.getElementById('regEmail').value;
+            const id = document.getElementById('regId').value;
+            const pwd = document.getElementById('regPwd').value;
 
-            // ตรวจสอบ Email (ต้องมีคำว่า mahidol)
-            if (!email.toLowerCase().includes('mahidol.edu') && !email.toLowerCase().includes('mahidol.ac.th')) {
-                showToast('กรุณาใช้อีเมลของมหาวิทยาลัยมหิดล (@student.mahidol.edu)', 'error');
+            // ตรวจสอบ Email มหิดลเบื้องต้น
+            if (!email.includes('@mahidol.edu') && !email.includes('@mahidol.ac.th') && !email.includes('@student.mahidol.edu')) {
+                showToast('กรุณาใช้อีเมลของมหาวิทยาลัยมหิดลเท่านั้น', 'error');
                 return;
             }
 
-            // ตรวจสอบรหัสผ่านตรงกัน
-            if (pwd !== pwdConfirm) {
-                showToast('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+            // เช็ค ID ซ้ำ
+            if (usersDB.find(u => u.id === id)) {
+                showToast('รหัสนักศึกษานี้ลงทะเบียนแล้ว', 'error');
                 return;
             }
 
-            // เช็คว่ามี id นี้แล้วหรือยัง
-            if (mockDatabase.find(u => u.id === studentId)) {
-                showToast('รหัสนักศึกษานี้ถูกลงทะเบียนแล้ว', 'warning');
-                return;
-            }
-
-            // บันทึกลง Mock DB
-            mockDatabase.push({
-                id: studentId,
-                password: pwd,
-                email: email
-            });
-
-            showToast('ลงทะเบียนสำเร็จ! สามารถเข้าสู่ระบบได้ทันที', 'success');
+            // สมัครสำเร็จและ Auto-Login
+            const newUser = { id, password: pwd, role: 'student', email };
+            usersDB.push(newUser);
+            currentUser = newUser;
             
-            // เคลียร์ฟอร์ม และสลับไปหน้า Login
-            e.target.reset();
-            
-            // นำรหัสนักศึกษาไปใส่ในช่อง Login รอไว้เลย
-            document.getElementById('loginUsername').value = studentId;
-            showView('loginView');
+            showToast('ลงทะเบียนสำเร็จ! เข้าสู่ระบบอัตโนมัติ', 'success');
+            completeLoginProcess();
         }
 
-        // จัดการ Logout
+        function handleLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginId').value;
+            const pwd = document.getElementById('loginPwd').value;
+
+            const user = usersDB.find(u => u.id === id && u.password === pwd);
+
+            if (user) {
+                currentUser = user;
+                showToast('เข้าสู่ระบบสำเร็จ', 'success');
+                completeLoginProcess();
+            } else {
+                showToast('รหัสนักศึกษาหรือรหัสผ่านไม่ถูกต้อง', 'error');
+            }
+        }
+
+        function completeLoginProcess() {
+            updateNavbar();
+            if (pendingRedirect) {
+                showView(pendingRedirect);
+                pendingRedirect = null;
+            } else {
+                showView('dashboardView');
+            }
+        }
+
         function handleLogout() {
             currentUser = null;
             updateNavbar();
@@ -534,61 +689,251 @@
             showView('dashboardView');
         }
 
-        // อัปเดต UI แถบเมนูด้านบน
         function updateNavbar() {
             const display = document.getElementById('userProfileDisplay');
-            const logoutBtn = document.getElementById('logoutBtn');
+            const loginBtn = document.getElementById('navLoginBtn');
             const idText = document.getElementById('loggedInUserId');
+            const adminBtn = document.getElementById('adminBtn');
 
             if (currentUser) {
                 display.classList.remove('hidden');
-                logoutBtn.classList.remove('hidden');
+                display.classList.add('flex');
+                loginBtn.classList.add('hidden');
                 idText.textContent = currentUser.id;
+
+                if (currentUser.role === 'admin') {
+                    adminBtn.classList.remove('hidden');
+                    adminBtn.classList.add('flex');
+                } else {
+                    adminBtn.classList.add('hidden');
+                }
             } else {
                 display.classList.add('hidden');
-                logoutBtn.classList.add('hidden');
+                display.classList.remove('flex');
+                loginBtn.classList.remove('hidden');
+                adminBtn.classList.add('hidden');
                 idText.textContent = '';
             }
         }
 
-        // แจ้งเตือนแบบ Toast (ใช้แทน alert)
-        let toastTimeout;
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMessage');
-            const toastIconContainer = document.getElementById('toastIcon');
-            
-            // ตั้งค่าไอคอนและสีตามประเภท
-            let iconHtml = '';
-            if (type === 'success') {
-                iconHtml = '<i data-lucide="check-circle" class="h-5 w-5 text-green-400"></i>';
-                toast.className = "fixed bottom-5 right-5 transform transition-all duration-300 z-[100] flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-lg shadow-2xl translate-y-0 opacity-100";
-            } else if (type === 'error') {
-                iconHtml = '<i data-lucide="x-circle" class="h-5 w-5 text-red-400"></i>';
-                toast.className = "fixed bottom-5 right-5 transform transition-all duration-300 z-[100] flex items-center gap-3 bg-red-900 text-white px-5 py-3 rounded-lg shadow-2xl translate-y-0 opacity-100";
+        // --- Admin & File Upload System ---
+        // โชว์ชื่อไฟล์เมื่อเลือก
+        document.getElementById('uploadFile').addEventListener('change', function(e) {
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            if(this.files.length > 0) {
+                fileNameDisplay.textContent = "ไฟล์ที่เลือก: " + this.files[0].name;
+                fileNameDisplay.classList.remove('hidden');
             } else {
-                iconHtml = '<i data-lucide="alert-circle" class="h-5 w-5 text-yellow-400"></i>';
-                toast.className = "fixed bottom-5 right-5 transform transition-all duration-300 z-[100] flex items-center gap-3 bg-slate-800 text-white px-5 py-3 rounded-lg shadow-2xl translate-y-0 opacity-100";
+                fileNameDisplay.classList.add('hidden');
+            }
+        });
+
+        function handleUploadResearch(e) {
+            e.preventDefault();
+            const type = document.getElementById('uploadType').value;
+            const year = document.getElementById('uploadYear').value;
+            const title = document.getElementById('uploadTitle').value;
+            const fileInput = document.getElementById('uploadFile');
+            
+            if (!fileInput.files.length) return;
+            const file = fileInput.files[0];
+
+            // สร้าง URL เสมือน (Blob URL) จากไฟล์ในเครื่อง เพื่อให้ iframe สามารถเปิดอ่านได้จริง
+            const blobUrl = URL.createObjectURL(file);
+
+            const newResearch = {
+                id: Date.now(),
+                type: type,
+                year: year,
+                title: title,
+                pdfUrl: blobUrl, // เก็บ Blob URL ไว้เปิด
+                fileName: file.name
+            };
+
+            researchesDB.unshift(newResearch); // ใส่ไว้บนสุด
+            showToast(`อัปโหลดไฟล์ ${file.name} สำเร็จ!`, 'success');
+            
+            // ล้างฟอร์ม
+            e.target.reset();
+            document.getElementById('fileNameDisplay').classList.add('hidden');
+            
+            renderResearchLists();
+        }
+
+        // --- Research Rendering ---
+        function renderResearchLists() {
+            renderPublicResearch();
+            renderAdminResearch();
+        }
+
+        function filterResearch() {
+            renderPublicResearch();
+        }
+
+        function renderPublicResearch() {
+            const container = document.getElementById('publicResearchListContainer');
+            if(!container) return;
+
+            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const filterType = document.getElementById('filterType')?.value || 'all';
+
+            const filtered = researchesDB.filter(item => {
+                const matchSearch = item.title.toLowerCase().includes(searchTerm);
+                const matchType = filterType === 'all' || item.type === filterType;
+                return matchSearch && matchType;
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="bg-white p-10 rounded-2xl text-center text-slate-500 border border-slate-100 shadow-sm">ไม่พบข้อมูลที่ค้นหา</div>`;
+                return;
             }
 
-            toastIconContainer.innerHTML = iconHtml;
-            toastMsg.textContent = message;
-            lucide.createIcons(); // render icon in toast
+            container.innerHTML = filtered.map(item => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 hover:border-emerald-400 hover:shadow-lg transition-all duration-300 group flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
+                    <div class="flex items-start gap-4 overflow-hidden w-full">
+                        <div class="bg-emerald-50 text-emerald-600 p-4 rounded-xl flex-shrink-0">
+                            <i data-lucide="book-open" class="h-6 w-6"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="text-base md:text-lg font-bold text-slate-800 leading-snug mb-2 group-hover:text-emerald-700">${item.title}</h3>
+                            <div class="flex flex-wrap gap-2 items-center">
+                                <span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide">${item.type}</span>
+                                <span class="text-xs text-slate-500 flex items-center bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100"><i data-lucide="calendar" class="h-3 w-3 mr-1"></i> ปี ${item.year}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-shrink-0 w-full md:w-auto mt-3 md:mt-0">
+                        <button onclick="openPdfViewer(${item.id})" class="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-100 rounded-xl text-sm font-medium transition-colors">
+                            <i data-lucide="file-text" class="h-4 w-4"></i> อ่านฉบับเต็ม
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
 
-            // แสดง Toast
-            clearTimeout(toastTimeout);
+        function renderAdminResearch() {
+            const container = document.getElementById('adminResearchListContainer');
+            const countEl = document.getElementById('adminResearchCount');
+            if(!container || !countEl) return;
+
+            countEl.textContent = `${researchesDB.length} รายการ`;
             
-            // ซ่อนอัตโนมัติ
+            if (researchesDB.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 text-sm">ยังไม่มีข้อมูลในระบบ</div>`;
+                return;
+            }
+
+            container.innerHTML = researchesDB.map((item, index) => `
+                <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-white hover:shadow-md transition">
+                    <div class="flex items-center overflow-hidden w-full">
+                        <span class="text-slate-400 font-bold w-6">${index + 1}.</span>
+                        <div class="bg-purple-100 text-purple-600 p-2 rounded-lg mr-3 flex-shrink-0">
+                            <i data-lucide="file-check-2" class="h-5 w-5"></i>
+                        </div>
+                        <div class="truncate pr-4">
+                            <h4 class="text-sm font-semibold text-slate-800 truncate">${item.title}</h4>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500">${item.type}</span>
+                                <span class="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-500">ปี ${item.year}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openPdfViewer(${item.id})" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-2 rounded-lg tooltip" title="เปิดดู">
+                        <i data-lucide="external-link" class="h-4 w-4"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // --- PDF Viewer ---
+        function openPdfViewer(id) {
+            const item = researchesDB.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('pdfViewerTitle').textContent = item.title;
+            const iframe = document.getElementById('pdfIframe');
+            const loading = document.getElementById('pdfLoading');
+            
+            loading.style.display = 'flex';
+            iframe.src = item.pdfUrl; // ใช้ URL ที่เก็บไว้ (เป็นได้ทั้งลิงก์เน็ต หรือ Blob URL จากการอัปโหลด)
+
+            const modal = document.getElementById('pdfViewerModal');
+            const content = document.getElementById('pdfViewerContent');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closePdfViewer() {
+            const modal = document.getElementById('pdfViewerModal');
+            const content = document.getElementById('pdfViewerContent');
+            const iframe = document.getElementById('pdfIframe');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                iframe.src = "";
+            }, 300);
+        }
+
+        // --- Utils ---
+        function handleMockBooking() {
+            showToast('บันทึกการนัดหมายสำเร็จ ระบบได้ส่งแจ้งเตือนไปยังอีเมลของท่านแล้ว', 'success');
+            setTimeout(() => { showView('dashboardView'); }, 1500);
+        }
+
+        let toastTimeout;
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toast.classList.remove('border-blue-500', 'border-red-500', 'border-green-500', 'border-yellow-500');
+            
+            if (type === 'success') {
+                toast.classList.add('border-green-500');
+                toastIcon.innerHTML = '<i data-lucide="check-circle" class="h-6 w-6 text-green-500"></i>';
+                toastTitle.textContent = 'สำเร็จ';
+            } else if (type === 'error') {
+                toast.classList.add('border-red-500');
+                toastIcon.innerHTML = '<i data-lucide="x-circle" class="h-6 w-6 text-red-500"></i>';
+                toastTitle.textContent = 'ผิดพลาด';
+            } else if (type === 'warning') {
+                toast.classList.add('border-yellow-500');
+                toastIcon.innerHTML = '<i data-lucide="alert-triangle" class="h-6 w-6 text-yellow-500"></i>';
+                toastTitle.textContent = 'แจ้งเตือน';
+            } else {
+                toast.classList.add('border-blue-500');
+                toastIcon.innerHTML = '<i data-lucide="info" class="h-6 w-6 text-blue-500"></i>';
+                toastTitle.textContent = 'ข้อมูล';
+            }
+
+            toastMessage.textContent = message;
+            lucide.createIcons();
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            }, 3500);
         }
 
-        function handleMockBooking() {
-            // ฟังก์ชันจำลองเมื่อกดยืนยันการนัดหมาย
-            showToast('ฟีเจอร์นี้ยังไม่เปิดให้บริการในระบบจำลอง', 'warning');
-        }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderResearchLists();
+        });
     </script>
 </body>
 </html>
